@@ -364,7 +364,7 @@ class BLModel(object):
         if np.max([len(grp) for grp in grouped.values()]) > 1:
             self._zday, self._zdaysum, self._zdaymax = {}, {}, {}
         # now create variables for different days and periods within each day
-        for day, periods in grouped.iteritems():
+        for day, periods in grouped.items():
             daystr = day.strftime(dsform)
             perstrs = [per.strftime(psform) for per in periods]
             if len(periods) > 1:
@@ -395,7 +395,7 @@ class BLModel(object):
         isBusiness = (locidx.dayofweek < 5) & (~locidx.isin(holidays))
         isBusiness = pd.Series(isBusiness, index=locidx)
         # add constraints on varible zday (if multiple periods per day)
-        for day, periods in grouped.iteritems():
+        for day, periods in grouped.items():
             daystr = day.strftime(dsform)
             perstrs = [per.strftime(psform) for per in periods]
             if len(periods) > 1:
@@ -526,7 +526,7 @@ class BLModel(object):
         if np.max([len(grp) for grp in grouped.values()]) > 1:
             self._zday, self._zdaysum, self._zdaymax = {}, {}, {}
         # now create variables for different days and periods within each day
-        for day, periods in grouped.iteritems():
+        for day, periods in grouped.items():
             daystr = day.strftime(dsform)
             perstrs = [per.strftime(psform) for per in periods]
             if len(periods) > 1:
@@ -561,7 +561,7 @@ class BLModel(object):
         isBusiness = (locidx.dayofweek < 5) & (~locidx.isin(holidays))
         isBusiness = pd.Series(isBusiness, index=locidx)
         # add constraints on varible zday (if multiple periods per day)
-        for day, periods in grouped.iteritems():
+        for day, periods in grouped.items():
             daystr = day.strftime(dsform)
             perstrs = [per.strftime(psform) for per in periods]
             if len(periods) > 1:
@@ -596,7 +596,7 @@ class BLModel(object):
                     lhs=self._bl[perstr_pre], sense=GRB.EQUAL,
                     rhs=0.0, name='blcon[{}]'.format(perstr_pre))
                 # now loop through the rest
-                for period, q in con.iloc[1:].iteritems():
+                for period, q in con.iloc[1:].items():
                     perstr = period.strftime(psform)
                     # if the period under consideration is a DR period,
                     # we have to do some work ...
@@ -666,7 +666,7 @@ class BLModel(object):
         self._red, self._z = {}, {}
         self._redpos, self._redBL, self._red0 = {}, {}, {}
         # create variables for different days and periods within each day
-        for day, periods in self._grouped.iteritems():
+        for day, periods in self._grouped.items():
             perstrs = [per.strftime(psform) for per in periods]
             for period, perstr in zip(periods, perstrs):
                 self._red[perstr] = self._model.addVar(
@@ -801,13 +801,13 @@ class BLModel(object):
             for hour, conhr in con_hrly.items():
                 blvals = [cmeans[hour]]
                 if red_times is not None:
-                    for period, c in conhr.iteritems():
+                    for period, c in conhr.items():
                         if period in red_times:
                             blvals.append(blvals[-1])
                         else:
                             blvals.append(alpha*c + (1-alpha)*blvals[-1])
                 else:
-                    for period, c in conhr.iteritems():
+                    for period, c in conhr.items():
                         blvals.append(alpha*c + (1-alpha)*blvals[-1])
                 bl_hrly.append(pd.Series(blvals[1:], index=conhr.index))
             bls.append(pd.concat(bl_hrly).tz_convert('GMT'))

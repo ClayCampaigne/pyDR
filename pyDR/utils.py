@@ -1781,7 +1781,7 @@ def net_benefits_test(LMP, n='all', how='absolute', maxperday=24,
             countdict = {}
             ncurr = 0
             for ts, val in criterion.tz_convert('US/Pacific').sort_values(
-                    ascending=False).iteritems():
+                    ascending=False).items():
                 if ts.date() in countdict:
                     if countdict[ts.date()] == maxperday:
                         continue

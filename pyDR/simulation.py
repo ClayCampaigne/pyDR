@@ -11,7 +11,7 @@ import pandas as pd
 import logging
 import logging.config
 # logutils package required as QueueHandler/Listener not available <3.2
-import logutils.queue
+# import logutils.queue
 
 from pyDR.dynamic_models import PavlaksModel, QuadraticUtilityWithBattery
 from .blopt import BLModel, compute_BLtaking_eq
@@ -147,7 +147,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
         Main function for simulating building model for a given dataset.
     """
     # in python > 3.4 use logging.handlers.QueueHandler instead
-    qh = logutils.queue.QueueHandler(log_queue)
+    # qh = logutils.queue.QueueHandler(log_queue)  # CWC commented this out
     logger = logging.getLogger('Process {}'.format(i))
     # start work
     logger.log(logging.INFO, 'Solving for range {} - {}'.format(
@@ -179,7 +179,9 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
         xmax, xmin = get_comfort_constraints(index)
         # define constraints and energy coefficients
         umin = np.array([0, 0])
-        umax = np.array([370, kwargs['max_cool'][node]])
+        umax = np.array([2000000000, 2000000000]) # put the max int32 here
+        # umax = np.array([370, kwargs['max_cool'][node]])
+        # CWC 2019-10-17: Clay changed the max cooling to 5000 to fix an infeasibility.
         blmodel._dynsys.set_opts(
             umin=np.tile(umin, (len(index), 1)),
             umax=np.tile(umax, (len(index), 1)),
@@ -195,6 +197,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                 meter_per_day = meter_charges_yearly[year][
                     tariff]['Voluntary']['SmartMeter']
             elif 'Zero' in tariff or 'OptFlat' in tariff:
+                # The Zero tariff is used as a base on top of which to add RTPs
                 meter_per_day = 0.0
             else:
                 meter_per_day = meter_charges_yearly[year][tariff]
@@ -202,6 +205,19 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                 logger.log(logging.INFO, 'Solving {} under tariff {}'.format(
                     node, tariff))
                 blmodel.optimize(tariff, LMP=LMP, isRT=True, carbon=carbon)
+                status_code = blmodel.get_model().status
+                if status_code != 2:
+                    if status_code == 3:
+                        #path = "C:/Users/Clay/Desktop/pyDR_logs"
+                        blmodel.get_model().computeIIS()
+                        blmodel.get_model().write("C:/Users/Clay/Desktop/pyDR_logs/infeas_iis.ilp")
+                        raise ValueError("The problem status is Infeasible.")
+
+                    if status_code == 5:
+                        raise ValueError("The problem status is Unbounded")
+                    else:
+                        raise ValueError(f"The problem status is not optimal. Code is {status_code}")
+
                 results = results.append(
                     process_HVAC(blmodel, meter_per_day, ts_start, ts_end,
                                  tariff, LMP, node, 'None', 0, isRT=True,
@@ -396,7 +412,7 @@ def simulate_QU(i, log_queue, result_queue, data, etas, nodes, tariffs, xlims,
         Main function for simulating building model for a given dataset.
     """
     # in python > 3.4 use logging.handlers.QueueHandler instead
-    qh = logutils.queue.QueueHandler(log_queue)
+    # qh = logutils.queue.QueueHandler(log_queue)
     logger = logging.getLogger('Process {}'.format(i))
     # start work
     logger.log(logging.INFO, 'Solving for range {} - {}'.format(
