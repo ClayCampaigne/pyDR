@@ -32,7 +32,7 @@ def create_folder(filename):
         try:
             os.makedirs(os.path.dirname(filename))
         except OSError as exc:  # Guard against race condition
-            if exc.errno != errno.EEXIST:
+            if exc.errno != errno.EEXIST: 
                 raise
 
 
@@ -147,8 +147,8 @@ def extract_PGE_loadshape(filename, start_date=None, end_date=None, name=None):
 
 def daily_occurrences(index, tz='US/Pacific'):
     """
-        Takes in a pandas DateTimeIndex and returns a pandas Series
-        indexed by the days in index with the number of occurances of
+        Takes in a pandas DatetimeIndex and returns a pandas Series
+        indexed by the days in index with the number of occurrences of
         timestamps on that day as the values.
     """
     locidx = index.tz_convert(tz)
@@ -357,6 +357,7 @@ def _PGE_tariff_data():
     # http://www.pge.com/includes/docs/pdfs/mybusiness/customerservice/
     # energychoice/communitychoiceaggregation/faq/
     # business_non_generation_rates.pdf.
+
     meter = {'A1':    0.65708,
              'A1TOU': 0.65708,
              'A6TOU': 0.65708 + 0.20107,
@@ -386,6 +387,274 @@ def _PGE_tariff_data():
     return nrg, dem, meter
 
 
+def _PGE_tariff_data_2016():
+    # This is from PG&E_Comml_150101-150228.xls, entered Dec 29 2019 for the 2019/2020 paper
+    """
+        Prepares data for PGE tariffs.
+        nrg   : Energy charges
+        dem   : Demand charges
+        meter : meter charges?
+    """
+    nrg = {'Zero':                {'Summer': {'Peak':        0.0,
+                                              'PartialPeak': 0.0,
+                                              'OffPeak':     0.0},
+                                   'Winter': {'PartialPeak': 0.0,
+                                              'OffPeak':     0.0}},
+           'A1':                  {'Summer': {'Peak':        0.23836,
+                                              'PartialPeak': 0.23836,
+                                              'OffPeak':     0.23836},
+                                   'Winter': {'PartialPeak': 0.18335,
+                                              'OffPeak':     0.18335}},
+           'A1TOU':               {'Summer': {'Peak':        0.25368,
+                                              'PartialPeak': 0.23002,
+                                              'OffPeak':     0.20267},
+                                   'Winter': {'PartialPeak': 0.21039,
+                                              'OffPeak':     0.18948}},
+           'A1_non-gen': {'Summer': {'Peak': 0.12803,
+                                     'PartialPeak': 0.12803,
+                                     'OffPeak': 0.12803},
+                          'Winter': {'PartialPeak': 0.09728,
+                                     'OffPeak': 0.09728}},
+           'A1TOU_non-gen': {'Summer': {'Peak': 0.12803,
+                                        'PartialPeak': 0.12803,
+                                        'OffPeak': 0.12803},
+                             'Winter': {'PartialPeak': 0.09728,
+                                        'OffPeak': 0.09728}},
+           'A6TOU':               {'Summer': {'Peak':        0.54462,
+                                              'PartialPeak': 0.24779,
+                                              'OffPeak':     0.1762},
+                                   'Winter': {'PartialPeak': 0.19402,
+                                              'OffPeak':     0.17578}},
+           'A10_secondary':       {'Summer': {'Peak':        0.15943,
+                                              'PartialPeak': 0.15943,
+                                              'OffPeak':     0.15943},
+                                   'Winter': {'PartialPeak': 0.12259,
+                                              'OffPeak':     0.12259}},
+           'A10_primary':         {'Summer': {'Peak':        0.14958,
+                                              'PartialPeak': 0.14958,
+                                              'OffPeak':     0.14958},
+                                   'Winter': {'PartialPeak': 0.1189,
+                                              'OffPeak':     0.1189}},
+           'A10_transmission':    {'Summer': {'Peak':        0.11561,
+                                              'PartialPeak': 0.11561,
+                                              'OffPeak':     0.11561},
+                                   'Winter': {'PartialPeak': 0.09734,
+                                              'OffPeak':     0.09734}},
+           'A10TOU_secondary':    {'Summer': {'Peak':        0.21428,
+                                              'PartialPeak': 0.15915,
+                                              'OffPeak':     0.13108},
+                                   'Winter': {'PartialPeak': 0.13047,
+                                              'OffPeak':     0.11341}},
+           'A10TOU_primary':      {'Summer': {'Peak':        0.20249,
+                                              'PartialPeak': 0.15193,
+                                              'OffPeak':     0.1253},
+                                   'Winter': {'PartialPeak': 0.12857,
+                                              'OffPeak':     0.11269}},
+           'A10TOU_transmission': {'Summer': {'Peak':        0.1378,  # not updated
+                                              'PartialPeak': 0.13257,
+                                              'OffPeak':     0.11272},
+                                   'Winter': {'PartialPeak': 0.10691, # not updated
+                                              'OffPeak':     0.09115}},
+           'E19TOU_secondary':    {'Summer': {'Peak':        0.14683,
+                                              'PartialPeak': 0.10671,
+                                              'OffPeak':     0.08014},
+                                   'Winter': {'PartialPeak': 0.10122,
+                                              'OffPeak':     0.08674}},
+           'E19TOU_primary':      {'Summer': {'Peak':        0.14861,  # I CWC did not update this
+                                              'PartialPeak': 0.10219,
+                                              'OffPeak':     0.07456},
+                                   'Winter': {'PartialPeak': 0.09696,
+                                              'OffPeak':     0.07787}},
+           'E19TOU_transmission': {'Summer': {'Peak':        0.09129,  # I CWC did not update this
+                                              'PartialPeak': 0.08665,
+                                              'OffPeak':     0.07043},
+                                   'Winter': {'PartialPeak': 0.08500,
+                                              'OffPeak':     0.07214}}}
+    dem = {'A10_primary':         {'Summer': 15.45, 'Winter': 9.29},
+           'A10_secondary':       {'Summer': 16.37, 'Winter': 9.0},
+           'A10_transmission':    {'Summer': 9.47, 'Winter': 4.91},  # not updated
+           'A10TOU_primary':      {'Summer': 15.45, 'Winter': 9.29},
+           'A10TOU_secondary':    {'Summer': 16.37, 'Winter': 9.0},
+           'A10TOU_transmission': {'Summer': 9.47, 'Winter': 4.91},  # not updated
+           'E19TOU_secondary':    {'Summer': {'mpeak': 18.74,
+                                              'ppeak': 5.23,
+                                              'max': 15.86},
+                                   'Winter': {'ppeak': 0.13,
+                                              'max': 15.86}},
+           'E19TOU_primary':      {'Summer': {'mpeak': 16.68,
+                                              'ppeak': 4.57,
+                                              'max': 12.59},
+                                   'Winter': {'ppeak': 0.15,
+                                              'max': 12.59}},
+           'E19TOU_transmission': {'Summer': {'mpeak': 17.03, # not updated
+                                              'ppeak': 3.78,
+                                              'max': 6.48},
+                                   'Winter': {'ppeak': 0.0,
+                                              'max': 6.48}}
+           }
+    meter = {'A1':    0.65708,  # CWC not updating any meter charges 20191229
+             'A1TOU': 0.65708,
+             'A6TOU': 0.65708 + 0.20107,
+             'A10_secondary':    4.59959,
+             'A10_primary':      4.59959,
+             'A10_transmission': 4.59959,
+             'A10TOU_secondary':    4.59959,
+             'A10TOU_primary':      4.59959,
+             'A10TOU_transmission': 4.59959,
+             'E19TOU_secondary': {'Mandatory': {'S': 19.71253,
+                                                'P': 32.85421,
+                                                'T': 59.13758},
+                                  'Voluntary': {'SmartMeter': 4.59959,
+                                                'NoSmartMeter': 4.777}},
+             'E19TOU_primary': {'Mandatory': {'S': 19.71253,
+                                              'P': 32.85421,
+                                              'T': 59.13758},
+                                'Voluntary': {'SmartMeter': 4.59959,
+                                              'NoSmartMeter': 4.777}},
+             'E19TOU_transmission': {'Mandatory': {'S': 19.71253,
+                                                   'P': 32.85421,
+                                                   'T': 59.13758},
+                                     'Voluntary': {'SmartMeter': 4.59959,
+                                                   'NoSmartMeter': 4.777}},
+             'Zero': 0.0
+             }
+    return nrg, dem, meter
+
+
+
+def _PGE_tariff_data_2015b():
+    # This is from PG&E_Comml_150101-150228.xls, entered Dec 29 2019 for the 2019/2020 paper
+    """
+        Prepares data for PGE tariffs.
+        nrg   : Energy charges
+        dem   : Demand charges
+        meter : meter charges?
+    """
+    nrg = {'Zero':                {'Summer': {'Peak':        0.0,
+                                              'PartialPeak': 0.0,
+                                              'OffPeak':     0.0},
+                                   'Winter': {'PartialPeak': 0.0,
+                                              'OffPeak':     0.0}},
+           'A1':                  {'Summer': {'Peak':        0.24059,
+                                              'PartialPeak': 0.24059,
+                                              'OffPeak':     0.24059},
+                                   'Winter': {'PartialPeak': 0.16327,
+                                              'OffPeak':     0.16327}},
+           'A1TOU':               {'Summer': {'Peak':        0.26124,
+                                              'PartialPeak': 0.25191,
+                                              'OffPeak':     0.22351},
+                                   'Winter': {'PartialPeak': 0.17361,
+                                              'OffPeak':     0.15379}},
+           'A1_non-gen': {'Summer': {'Peak': 0.12803,
+                                     'PartialPeak': 0.12803,
+                                     'OffPeak': 0.12803},
+                          'Winter': {'PartialPeak': 0.09728,
+                                     'OffPeak': 0.09728}},
+           'A1TOU_non-gen': {'Summer': {'Peak': 0.12803,
+                                        'PartialPeak': 0.12803,
+                                        'OffPeak': 0.12803},
+                             'Winter': {'PartialPeak': 0.09728,
+                                        'OffPeak': 0.09728}},
+           'A6TOU':               {'Summer': {'Peak':        0.61027,
+                                              'PartialPeak': 0.28427,
+                                              'OffPeak':     0.1569},
+                                   'Winter': {'PartialPeak': 0.17969,
+                                              'OffPeak':     0.1469}},
+           'A10_secondary':       {'Summer': {'Peak':        0.16408,
+                                              'PartialPeak': 0.16408,
+                                              'OffPeak':     0.16408},
+                                   'Winter': {'PartialPeak': 0.11971,
+                                              'OffPeak':     0.11971}},
+           'A10_primary':         {'Summer': {'Peak':        0.1523,
+                                              'PartialPeak': 0.1523,
+                                              'OffPeak':     0.1523},
+                                   'Winter': {'PartialPeak': 0.11366,
+                                              'OffPeak':     0.11366}},
+           'A10_transmission':    {'Summer': {'Peak':        0.12436,
+                                              'PartialPeak': 0.12436,
+                                              'OffPeak':     0.12436},
+                                   'Winter': {'PartialPeak': 0.09882,
+                                              'OffPeak':     0.09882}},
+           'A10TOU_secondary':    {'Summer': {'Peak':        0.18183,
+                                              'PartialPeak': 0.17379,
+                                              'OffPeak':     0.14934},
+                                   'Winter': {'PartialPeak': 0.13047,
+                                              'OffPeak':     0.10951}},
+           'A10TOU_primary':      {'Summer': {'Peak':        0.16714,
+                                              'PartialPeak': 0.1614,
+                                              'OffPeak':     0.13944},
+                                   'Winter': {'PartialPeak': 0.12246,
+                                              'OffPeak':     0.10528}},
+           'A10TOU_transmission': {'Summer': {'Peak':        0.1378,
+                                              'PartialPeak': 0.13257,
+                                              'OffPeak':     0.11272},
+                                   'Winter': {'PartialPeak': 0.10691,
+                                              'OffPeak':     0.09115}},
+           'E19TOU_secondary':    {'Summer': {'Peak':        0.16533,
+                                              'PartialPeak': 0.11193,
+                                              'OffPeak':     0.07697},
+                                   'Winter': {'PartialPeak': 0.10485,
+                                              'OffPeak':     0.08097}},
+           'E19TOU_primary':      {'Summer': {'Peak':        0.14861,  # I CWC did not update this
+                                              'PartialPeak': 0.10219,
+                                              'OffPeak':     0.07456},
+                                   'Winter': {'PartialPeak': 0.09696,
+                                              'OffPeak':     0.07787}},
+           'E19TOU_transmission': {'Summer': {'Peak':        0.09129,  # I CWC did not update this
+                                              'PartialPeak': 0.08665,
+                                              'OffPeak':     0.07043},
+                                   'Winter': {'PartialPeak': 0.08500,
+                                              'OffPeak':     0.07214}}}
+    dem = {'A10_primary':         {'Summer': 13.83, 'Winter': 6.81},
+           'A10_secondary':       {'Summer': 14.83, 'Winter': 6.61},
+           'A10_transmission':    {'Summer': 9.47, 'Winter': 4.91},
+           'A10TOU_primary':      {'Summer': 13.83, 'Winter': 6.81},
+           'A10TOU_secondary':    {'Summer': 14.83, 'Winter': 6.61},
+           'A10TOU_transmission': {'Summer': 9.47, 'Winter': 4.91},
+           'E19TOU_secondary':    {'Summer': {'mpeak': 19.03,
+                                              'ppeak': 4.42,
+                                              'max': 13.67},
+                                   'Winter': {'ppeak': 0.24,
+                                              'max': 13.67}},
+           'E19TOU_primary':      {'Summer': {'mpeak': 18.90,
+                                              'ppeak': 4.06,
+                                              'max': 10.69},
+                                   'Winter': {'ppeak': 0.46,
+                                              'max': 10.69}},
+           'E19TOU_transmission': {'Summer': {'mpeak': 17.03,
+                                              'ppeak': 3.78,
+                                              'max': 6.48},
+                                   'Winter': {'ppeak': 0.0,
+                                              'max': 6.48}}
+           }
+    meter = {'A1':    0.65708,
+             'A1TOU': 0.65708,
+             'A6TOU': 0.65708 + 0.20107,
+             'A10_secondary':    4.59959,
+             'A10_primary':      4.59959,
+             'A10_transmission': 4.59959,
+             'A10TOU_secondary':    4.59959,
+             'A10TOU_primary':      4.59959,
+             'A10TOU_transmission': 4.59959,
+             'E19TOU_secondary': {'Mandatory': {'S': 19.71253,
+                                                'P': 32.85421,
+                                                'T': 59.13758},
+                                  'Voluntary': {'SmartMeter': 4.59959,
+                                                'NoSmartMeter': 4.777}},
+             'E19TOU_primary': {'Mandatory': {'S': 19.71253,
+                                              'P': 32.85421,
+                                              'T': 59.13758},
+                                'Voluntary': {'SmartMeter': 4.59959,
+                                              'NoSmartMeter': 4.777}},
+             'E19TOU_transmission': {'Mandatory': {'S': 19.71253,
+                                                   'P': 32.85421,
+                                                   'T': 59.13758},
+                                     'Voluntary': {'SmartMeter': 4.59959,
+                                                   'NoSmartMeter': 4.777}},
+             'Zero': 0.0
+             }
+    return nrg, dem, meter
+
 def _PGE_tariff_data_2015():
     """
         Prepares data for PGE tariffs.
@@ -408,6 +677,16 @@ def _PGE_tariff_data_2015():
                                               'OffPeak':     0.22269},
                                    'Winter': {'PartialPeak': 0.17280,
                                               'OffPeak':     0.15298}},
+           'A1_non-gen': {'Summer': {'Peak': 0.12803,  # same as 2014
+                                     'PartialPeak': 0.12803,
+                                     'OffPeak': 0.12803},
+                          'Winter': {'PartialPeak': 0.09728,
+                                     'OffPeak': 0.09728}},
+           'A1TOU_non-gen': {'Summer': {'Peak': 0.12803,
+                                        'PartialPeak': 0.12803,
+                                        'OffPeak': 0.12803},
+                             'Winter': {'PartialPeak': 0.09728,
+                                        'OffPeak': 0.09728}},
            'A6TOU':               {'Summer': {'Peak':        0.60974,
                                               'PartialPeak': 0.28352,
                                               'OffPeak':     0.15605},
@@ -1224,10 +1503,10 @@ def _pdp_credits_2013():
 def _pdp_credits_2012():
     ''' peak demand credits data
         would like to integrate this above, but didnt want to mess with
-        code if you call the above somehwere else
-        pdpkwh : dictionary with pdp per [kwh] energy credits; keys are tarrifs
-        pdpdem : dictionary with pdp demand credits; keys are tarrifs
-        pdpchg : dictionary with pdp charges; keys are tarrifs
+        code if you call the above somewhere else
+        pdpkwh : dictionary with pdp per [kwh] energy credits; keys are tariffs
+        pdpdem : dictionary with pdp demand credits; keys are tariffs
+        pdpchg : dictionary with pdp charges; keys are tariffs
     '''
     pdpkwh = {'A1TOU':               {'Summer': {'Peak': 0.00991,
                                                  'PartialPeak': 0.00991,
@@ -1293,8 +1572,6 @@ def _pdp_credits_2012():
         'E19TOU_transmission': 1.20,
     }
     return pdpkwh, pdpdem, pdpchg
-
-
 
 
 def get_pdp_demand_credit(tariff, month, year):
@@ -1471,7 +1748,7 @@ def net_benefits_test(LMP, n='all', how='absolute', maxperday=24,
                       ignore_days=0):
     """
         Takes a time-series of LMPs ($/MW) indexed by a timezone-aware
-        pd.Datetimeindex and returns a boolean vector indicating
+        pd.DatetimeIndex and returns a boolean vector indicating
         whether the LMP exceeds the CAISO Net Benefits Test threshold.
         Also allows to specify option n, which results in returning
         only those n intervals with the highest relative price levels.
@@ -1524,18 +1801,25 @@ def net_benefits_test(LMP, n='all', how='absolute', maxperday=24,
 
 # parse data for CAISO net benefits test
 nbt = _parse_nbt_data()
+# this historical data is no longer saved or available.
+# Regardless, there are a ton of events, so we will continue choosing e.g. the 75 highest events
+
 # define PGE tariff data
 nrg_charges, dem_charges, meter_charges = _PGE_tariff_data()
 nrg_charges_yearly, dem_charges_yearly, meter_charges_yearly = {}, {}, {}
 nrg_charges_yearly[2012], dem_charges_yearly[2012], meter_charges_yearly[2012] = _PGE_tariff_data_2012()
 nrg_charges_yearly[2013], dem_charges_yearly[2013], meter_charges_yearly[2013] = _PGE_tariff_data_2013()
 nrg_charges_yearly[2014], dem_charges_yearly[2014], meter_charges_yearly[2014] = _PGE_tariff_data_2014()
+# 2015b was what CWC entered 20191229. Seems to have slight discrepancy?
+nrg_charges_yearly[2015], dem_charges_yearly[2015], meter_charges_yearly[2015] = _PGE_tariff_data_2015b()
+nrg_charges_yearly[2016], dem_charges_yearly[2016], meter_charges_yearly[2016] = _PGE_tariff_data_2016()
 
 pdpkwh_credit, pdpdem_credit, pdpchg_chrg = _pdp_credits()
 pdpkwh_credit_yearly, pdpdem_credit_yearly, pdpchg_chrg_yearly = {}, {}, {}
 pdpkwh_credit_yearly[2012], pdpdem_credit_yearly[2012], pdpchg_chrg_yearly[2012] = _pdp_credits_2012()
 pdpkwh_credit_yearly[2013], pdpdem_credit_yearly[2013], pdpchg_chrg_yearly[2013] = _pdp_credits_2013()
 pdpkwh_credit_yearly[2014], pdpdem_credit_yearly[2014], pdpchg_chrg_yearly[2014] = _pdp_credits_2014()
+# let's not look into any PDP tariffs for the new dataset. Keep it simple!
 
 pdp_days = _parse_pdp_days()
 pdp_charges = {'A1TOU': 0.60, 'A6TOU': 1.20, 'A10TOU_secondary': 0.90,
