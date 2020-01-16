@@ -312,7 +312,12 @@ class LinearSystem(DynamicalSystem):
             pwrcons = [LinExpr(nrgcoeffs, [self.u[t, i] for i in range(nu)])
                        for t in range(self._opts['T'])]
             # rescale to kWh (if time index resolution is different from 1h)
-            rescale = self._index.freq.delta.total_seconds() / 3600.0
+            if self._index.freq is not None:
+                rescale = self._index.freq.delta.total_seconds() / 3600.0
+            else:
+                # current pandas doesn't allow the above. Let's specialize to the case where we can assume it's hourly
+                assert self._index.inferred_freq == 'H'
+                rescale = 1
             nrgcons = [pc * rescale for pc in pwrcons]
             self._cons = pd.DataFrame({'power': pwrcons, 'energy': nrgcons},
                                       index=self._index)

@@ -179,8 +179,8 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
         xmax, xmin = get_comfort_constraints(index)
         # define constraints and energy coefficients
         umin = np.array([0, 0])
-        umax = np.array([2000000000, 2000000000]) # put the max int32 here
-        # umax = np.array([370, kwargs['max_cool'][node]])
+        # umax = np.array([2000000000, 2000000000]) # put the max int32 here
+        umax = np.array([370, kwargs['max_cool'][node]])
         # CWC 2019-10-17: Clay changed the max cooling to 5000 to fix an infeasibility.
         blmodel._dynsys.set_opts(
             umin=np.tile(umin, (len(index), 1)),
@@ -251,7 +251,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                         'output_folder')),
                         ignore_index=True)
                 # solve for the PDP version of the tariff if applicable
-                if tariff in pdp_compatible:
+                if False: # tariff in pdp_compatible: CWC 2020-01-15: let's drop the PDP thing in this study; too much clutter
                     blmodel.optimize(tariff, LMP=LMP, isPDP=True,
                                      carbon=carbkw)
                     results = results.append(

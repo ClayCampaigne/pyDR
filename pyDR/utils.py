@@ -18,7 +18,9 @@ from pandas.tseries.holiday import USFederalHolidayCalendar
 E19 = ['E19TOU_secondary', 'E19TOU_primary', 'E19TOU_transmission']
 # define social cost of carbon
 # if cost per metric ton is $40:
-carbon_costs = {2012: 16.60, 2013: 11.62, 2014: 11.62}
+# TODO: Add Borenstein and Bushnell data. Their numbers are
+# {2014: 2.690731 , 2015: 2.690731  , 2016: 2.690731  } which seem to be in the wrong units.
+carbon_costs = {2012: 16.60, 2013: 11.62, 2014: 11.62, 2015: 11.62, 2016: 11.62}
 # # if cost per metric ton is $38:
 # carbon_costs = {'2012': 15.77, '2013': 10.79, '2014': 10.79}
 
@@ -469,7 +471,13 @@ def _PGE_tariff_data_2016():
                                               'PartialPeak': 0.08665,
                                               'OffPeak':     0.07043},
                                    'Winter': {'PartialPeak': 0.08500,
-                                              'OffPeak':     0.07214}}}
+                                              'OffPeak':     0.07214}},
+           'OptFlat_non-gen': {'Summer': {'Peak': 0.0,
+                                          'PartialPeak': 0.0,
+                                          'OffPeak': 0.0},
+                               'Winter': {'PartialPeak': 0.0,
+                                          'OffPeak': 0.0}}
+           }
     dem = {'A10_primary':         {'Summer': 15.45, 'Winter': 9.29},
            'A10_secondary':       {'Summer': 16.37, 'Winter': 9.0},
            'A10_transmission':    {'Summer': 9.47, 'Winter': 4.91},  # not updated
@@ -522,7 +530,7 @@ def _PGE_tariff_data_2016():
 
 
 
-def _PGE_tariff_data_2015b():
+def _PGE_tariff_data_2015():
     # This is from PG&E_Comml_150101-150228.xls, entered Dec 29 2019 for the 2019/2020 paper
     """
         Prepares data for PGE tariffs.
@@ -604,7 +612,13 @@ def _PGE_tariff_data_2015b():
                                               'PartialPeak': 0.08665,
                                               'OffPeak':     0.07043},
                                    'Winter': {'PartialPeak': 0.08500,
-                                              'OffPeak':     0.07214}}}
+                                              'OffPeak':     0.07214}},
+           'OptFlat_non-gen': {'Summer': {'Peak': 0.0,
+                                          'PartialPeak': 0.0,
+                                          'OffPeak': 0.0},
+                               'Winter': {'PartialPeak': 0.0,
+                                          'OffPeak': 0.0}}
+           }
     dem = {'A10_primary':         {'Summer': 13.83, 'Winter': 6.81},
            'A10_secondary':       {'Summer': 14.83, 'Winter': 6.61},
            'A10_transmission':    {'Summer': 9.47, 'Winter': 4.91},
@@ -655,7 +669,7 @@ def _PGE_tariff_data_2015b():
              }
     return nrg, dem, meter
 
-def _PGE_tariff_data_2015():
+def _PGE_tariff_data_2015b():
     """
         Prepares data for PGE tariffs.
         nrg   : Energy charges
@@ -1639,8 +1653,6 @@ def get_energy_charges(index, tariff, isRT=False, LMP=None,
     year = index[0].year
     if year is not None:
         nrg_charges = nrg_charges_yearly[year]
-        pdpkwh_credit = pdpkwh_credit_yearly[year]
-        pdp_charges = pdpchg_chrg_yearly[year]
 
     if isRT:
         if isPDP:
@@ -1671,6 +1683,8 @@ def get_energy_charges(index, tariff, isRT=False, LMP=None,
             raise Exception('Tariff {} not '.format(tariff) +
                             'compatible with PDP.')
         else:
+            pdpkwh_credit = pdpkwh_credit_yearly[year]
+            pdp_charges = pdpchg_chrg_yearly[year]
             pdpcr = pdpkwh_credit[tariff]
             pdpchrg = pdp_charges[tariff]
     idx = index.tz_convert('US/Pacific')

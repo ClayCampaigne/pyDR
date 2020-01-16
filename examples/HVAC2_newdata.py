@@ -22,12 +22,12 @@ from pyDR.simulation import get_internal_gains, log_config, simulate_HVAC, max_c
 # Setup
 
 DATA_PATH = "C:/Users/Clay/Desktop/pyDR_data_pavlak/pyDR_data"
-LOG_PATH = "C:/Users/Clay/Desktop/pyDR_logs"
-RESULTS_PATH = "C:/Users/Clay/Desktop/pyDR_results"
+LOG_PATH = "C:/Users/Clay/Desktop/pyDR_2014-2016_logs"
+RESULTS_PATH = "C:/Users/Clay/Desktop/pyDR_2014-2016_results"
 
 # location of data files (available for download at
 # https://www.ocf.berkeley.edu/~balandat/pyDR_data.zip)
-data_file = os.path.join(DATA_PATH, "data_complete.csv")
+data_file = os.path.join(DATA_PATH, "data_complete_2014-2016.csv")
 
 # location of the log file
 log_file = os.path.join(LOG_PATH, "HVAC_sim.log")
@@ -46,18 +46,19 @@ output_folder = None
 def main():
     # read in data
     data = pd.read_csv(data_file, parse_dates=['timestamp_GMT'],
-                       index_col='timestamp_GMT').tz_localize('GMT')
-    data = data.resample('1H').mean()
+                       index_col='timestamp_GMT').tz_localize('UTC')
+    # data = data.resample('1H').mean()
 
     # Define model and simulation parameters
 
     # generate copies of input data for parallelization
-    sim_ranges = [[datetime(2012, 1, 1), datetime(2012, 12, 31)],
-                  [datetime(2013, 1, 1), datetime(2013, 12, 31)],
-                  [datetime(2014, 1, 1), datetime(2014, 12, 31)]]
+    sim_ranges = [[datetime(2014, 1, 1), datetime(2014, 12, 31)],
+                  [datetime(2015, 1, 1), datetime(2015, 12, 31)],
+                  [datetime(2016, 1, 1), datetime(2016, 12, 31)]]
     sim_tariffs = ['Zero', 'OptFlat', 'A1', 'A1TOU', 'A6TOU', 'A10_secondary',
                    'A10TOU_secondary', 'E19TOU_secondary']
-    sim_nodes = ['PGCC', 'PGEB', 'PGF1', 'PGP2', 'PGSA']
+    sim_nodes = ['PGCC', 'PGF1', 'PGSA']  # I couldn't get all the nodes since CAISO changed its data
+    # retention policy
     n_DR = [75]
     n_ranges = len(sim_ranges)
 
