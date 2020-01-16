@@ -1776,6 +1776,8 @@ def net_benefits_test(LMP, n='all', how='absolute', maxperday=24,
     else:
         LMP_nbt = LMP
     if how == 'absolute':
+        # as of 2020, this data is no longer available. Thanks CAISO!
+        # in any case, the absolute criterion with small n doesn't actually require knowledge of the nbt threshold.
         criterion = LMP_nbt - nbt.loc[LMP_nbt.index]
     elif how == 'relative':
         criterion = LMP_nbt / nbt.loc[LMP_nbt.index]
@@ -1815,7 +1817,7 @@ def net_benefits_test(LMP, n='all', how='absolute', maxperday=24,
 
 # parse data for CAISO net benefits test
 nbt = _parse_nbt_data()
-# this historical data is no longer saved or available.
+# CWC 2020: this historical data is no longer saved or available because of CAISO's data rentention policy.
 # Regardless, there are a ton of events, so we will continue choosing e.g. the 75 highest events
 
 # define PGE tariff data
@@ -1824,8 +1826,8 @@ nrg_charges_yearly, dem_charges_yearly, meter_charges_yearly = {}, {}, {}
 nrg_charges_yearly[2012], dem_charges_yearly[2012], meter_charges_yearly[2012] = _PGE_tariff_data_2012()
 nrg_charges_yearly[2013], dem_charges_yearly[2013], meter_charges_yearly[2013] = _PGE_tariff_data_2013()
 nrg_charges_yearly[2014], dem_charges_yearly[2014], meter_charges_yearly[2014] = _PGE_tariff_data_2014()
-# 2015b was what CWC entered 20191229. Seems to have slight discrepancy?
-nrg_charges_yearly[2015], dem_charges_yearly[2015], meter_charges_yearly[2015] = _PGE_tariff_data_2015b()
+# 2015 was what CWC entered 20191229 (original is 2015b now). Seems to have slight discrepancy?
+nrg_charges_yearly[2015], dem_charges_yearly[2015], meter_charges_yearly[2015] = _PGE_tariff_data_2015()
 nrg_charges_yearly[2016], dem_charges_yearly[2016], meter_charges_yearly[2016] = _PGE_tariff_data_2016()
 
 pdpkwh_credit, pdpdem_credit, pdpchg_chrg = _pdp_credits()
