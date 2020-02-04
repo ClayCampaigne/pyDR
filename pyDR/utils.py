@@ -1846,8 +1846,10 @@ pdp_charges = {'A1TOU': 0.60, 'A6TOU': 1.20, 'A10TOU_secondary': 0.90,
                'E19TOU_secondary': 1.20, 'E19TOU_primary': 1.20,
                'E19TOU_transmission': 1.20}
 # define tariffs that are compatible with RTP
-non_gen_tariffs = ['A1', 'A1TOU', 'A6TOU', 'A10_secondary', 'A10TOU_secondary',
-                   'E19TOU_secondary', 'OptFlatA1', 'OptFlatA6TOU', 'OptFlat']
-pdp_compatible = ['A1TOU', 'A6TOU',
-                  'A10TOU_secondary', 'A10TOU_primary', 'A10TOU_transmission',
-                  'E19TOU_secondary', 'E19TOU_primary', 'E19TOU_transmission']
+non_gen_tariffs = ['A1', 'A1TOU', 'OptFlatA1', 'OptFlatA6TOU', 'OptFlat']
+
+pdp_compatible = []
+
+# pdp_compatible = ['A1TOU', 'A6TOU',
+#                   'A10TOU_secondary', 'A10TOU_primary', 'A10TOU_transmission',
+#                   'E19TOU_secondary', 'E19TOU_primary', 'E19TOU_transmission']
