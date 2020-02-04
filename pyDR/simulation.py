@@ -142,7 +142,7 @@ def process_QU(blmodel, meter_per_day, ts_start, ts_end, tariff, LMP, node,
 
 def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                   BLtaking=True, x0=[22, 22, 22], ignore_days=7, maxperday=2,
-                  expMA=False, carbon=False, **kwargs):
+                  expMA=False, carbon=False, log_path=None, **kwargs):
     """
         Main function for simulating building model for a given dataset.
     """
@@ -210,8 +210,8 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                     if status_code == 3:
                         #path = "C:/Users/Clay/Desktop/pyDR_logs"
                         blmodel.get_model().computeIIS()
-                        blmodel.get_model().write("C:/Users/Clay/Desktop/pyDR_logs/infeas_iis.ilp")
-                        raise ValueError("The problem status is Infeasible.")
+                        blmodel.get_model().write(os.path.join(log_path, "infeas_iis.ilp"))
+                        raise ValueError("The problem status is Infeasible. Make sure solar irradiance is in kW, not W")
 
                     if status_code == 5:
                         raise ValueError("The problem status is Unbounded")
@@ -276,6 +276,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                     results = results.append(
                         process_HVAC(blmodel, meter_per_day, ts_start, ts_end,
                                      tariff, LMP, node, 'CAISO', ndr,
+                                     loss_inflators=data['loss_inflators'],
                                      carbon_indiv=carbkw, carbon_soc=carbon,
                                      output_folder=kwargs.get(
                                         'output_folder')),

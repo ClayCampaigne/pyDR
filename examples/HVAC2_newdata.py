@@ -63,11 +63,14 @@ def main():
     n_ranges = len(sim_ranges)
 
     # generate scaled sub-DataFrame
-    data_sim = pd.concat(
-        [data[[node+'_temp']] for node in sim_nodes] +
-        [data[[node+'_solar']]/1000 for node in sim_nodes] +
-        [data[[node+'_LMP']] for node in sim_nodes] +
-        [get_internal_gains(data.index)], axis=1)
+    colnames = colnames = [node+'_temp' for node in sim_nodes] +\
+                          [node+'_LMP' for node in sim_nodes]
+    data_sim = data[colnames]
+    for colname in [node+'_solar' for node in sim_nodes]:
+        data_sim[colname] = data[colname]/1000  # solar irradiance needs to be in kW, not Watts
+    data_sim['occupancy'] = get_internal_gains(data.index)
+    data_sim['loss_inflators'] = data['loss_inflators']
+
     # generate a list of DataFrames of different ranges for parallelization
     data_parallelize = []
     for (start_date, end_date) in sim_ranges:
@@ -98,14 +101,14 @@ def main():
                 target=simulate_HVAC, name='sim_worker {}'.format(i),
                 args=(i, log_queue, result_queue, data_parallelize[i],
                       sim_nodes, sim_tariffs, n_DR),
-                kwargs={'GRB_logfile': GRB_logdir + 'GRB_{}.log'.format(i),
+                kwargs={'log_path': LOG_PATH, 'GRB_logfile': GRB_logdir + 'GRB_{}.log'.format(i),
                         'expMA': False, 'carbon': True, 'MIPGap': 1e-6,
                         'TimeLimit': 2000, 'output_folder': output_folder,
                         'max_cool': max_cool})
             sim_workers.append(sim_worker)
             sim_worker.start()
 
-        # wait for all worker processes to finish
+        #data wait for all worker processes to finish
         for sw in sim_workers:
             sw.join()
 

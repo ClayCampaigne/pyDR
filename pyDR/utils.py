@@ -18,8 +18,7 @@ from pandas.tseries.holiday import USFederalHolidayCalendar
 E19 = ['E19TOU_secondary', 'E19TOU_primary', 'E19TOU_transmission']
 # define social cost of carbon
 # if cost per metric ton is $40:
-# TODO: Add Borenstein and Bushnell data. Their numbers are
-# {2014: 2.690731 , 2015: 2.690731  , 2016: 2.690731  } which seem to be in the wrong units.
+
 carbon_costs_old = {2012: 16.60, 2013: 11.62, 2014: 11.62} # these are the numbers we originally used
 carbon_costs = {2014: 26.90731, 2015: 26.90731, 2016: 26.13433}  # these numbers are from Borenstein and Bushnell 2018
 # I assume
@@ -1646,11 +1645,13 @@ def get_demand_charge(tariff, month, isPDP=False, year=None):
 
 
 def get_energy_charges(index, tariff, isRT=False, LMP=None,
-                       isPDP=False, carbon=False, year=None, dist_loss_inflators=None):
+                       isPDP=False, carbon=False, year=None, loss_inflators=None):
     """
         Return energy charges for each element in a pandas DateTimeIndex as a
         pandas DataFrame, indexed by a Datetimeindex localized to GMT timezone.
         Requires that the passed index is also timezone-aware.
+        Loss_inflators are hourly scaling values to account for distribution-system losses,
+        calculated on the basis of system load.
     """
     # do some checks whether the tariff makes sense
     year = index[0].year
@@ -1675,8 +1676,8 @@ def get_energy_charges(index, tariff, isRT=False, LMP=None,
             else:
                 # CWC we should inflate the LMP by the distribution loss inflation factor if we want the "optimal"
                 # flat tariff.
-                if dist_loss_inflators is not None:
-                    optflat = (LMP * dist_loss_inflators).mean()/1000
+                if loss_inflators is not None:
+                    optflat = (LMP * loss_inflators).mean() / 1000
                 else:
                     optflat = LMP.mean() / 1000.0
             tar = {'Summer': {'Peak':        optflat,
