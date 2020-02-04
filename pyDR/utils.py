@@ -20,7 +20,10 @@ E19 = ['E19TOU_secondary', 'E19TOU_primary', 'E19TOU_transmission']
 # if cost per metric ton is $40:
 # TODO: Add Borenstein and Bushnell data. Their numbers are
 # {2014: 2.690731 , 2015: 2.690731  , 2016: 2.690731  } which seem to be in the wrong units.
-carbon_costs = {2012: 16.60, 2013: 11.62, 2014: 11.62, 2015: 11.62, 2016: 11.62}
+carbon_costs_old = {2012: 16.60, 2013: 11.62, 2014: 11.62} # these are the numbers we originally used
+carbon_costs = {2014: 26.90731, 2015: 26.90731, 2016: 26.13433}  # these numbers are from Borenstein and Bushnell 2018
+# I assume
+
 # # if cost per metric ton is $38:
 # carbon_costs = {'2012': 15.77, '2013': 10.79, '2014': 10.79}
 
@@ -104,7 +107,7 @@ def powerset(iterable):
 def extract_PGE_loadshape(filename, start_date=None, end_date=None, name=None):
     """
         Reads in tab-separated files (falsely labeled .xls by PG&E) from the
-        PG&E website: http://www.pge.com/tariffs/energy_use_prices.shtml
+        PG&E website: http://www.pge.com/tariffs/energy_use_prices.shtml`
         Parses the dates and replaces all missing values (b/c of DST) by NaN
     """
     loadshapes = pd.read_csv(filename, sep='\t', parse_dates=['Date'],
