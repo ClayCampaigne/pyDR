@@ -1646,7 +1646,7 @@ def get_demand_charge(tariff, month, isPDP=False, year=None):
 
 
 def get_energy_charges(index, tariff, isRT=False, LMP=None,
-                       isPDP=False, carbon=False, year=None):
+                       isPDP=False, carbon=False, year=None, dist_loss_inflators=None):
     """
         Return energy charges for each element in a pandas DateTimeIndex as a
         pandas DataFrame, indexed by a Datetimeindex localized to GMT timezone.
@@ -1673,7 +1673,12 @@ def get_energy_charges(index, tariff, isRT=False, LMP=None,
             if 'non-gen' in tariff:
                 optflat = 0.0
             else:
-                optflat = LMP.mean() / 1000.0
+                # CWC we should inflate the LMP by the distribution loss inflation factor if we want the "optimal"
+                # flat tariff.
+                if dist_loss_inflators is not None:
+                    optflat = (LMP * dist_loss_inflators).mean()/1000
+                else:
+                    optflat = LMP.mean() / 1000.0
             tar = {'Summer': {'Peak':        optflat,
                               'PartialPeak': optflat,
                               'OffPeak':     optflat},

@@ -69,11 +69,11 @@ def main():
         [data[[node+'_LMP']] for node in sim_nodes] +
         [get_internal_gains(data.index)], axis=1)
     # generate a list of DataFrames of different ranges for parallelization
-    data_par = []
+    data_parallelize = []
     for (start_date, end_date) in sim_ranges:
         ts_start = pd.Timestamp(start_date, tz='US/Pacific')
         ts_end = pd.Timestamp(end_date, tz='US/Pacific')
-        data_par.append(
+        data_parallelize.append(
             data_sim[(data_sim.index >= ts_start) & (data_sim.index <= ts_end)]
         )
 
@@ -96,7 +96,7 @@ def main():
         for i in range(n_ranges):
             sim_worker = mp.Process(
                 target=simulate_HVAC, name='sim_worker {}'.format(i),
-                args=(i, log_queue, result_queue, data_par[i],
+                args=(i, log_queue, result_queue, data_parallelize[i],
                       sim_nodes, sim_tariffs, n_DR),
                 kwargs={'GRB_logfile': GRB_logdir + 'GRB_{}.log'.format(i),
                         'expMA': False, 'carbon': True, 'MIPGap': 1e-6,
