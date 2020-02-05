@@ -989,7 +989,7 @@ class BLModel(object):
 
 
 def compute_BLtaking_eq(blmodel, tariff, LMP, dr_periods, BL='CAISO',
-                        blinit='noDR', eps=0.005, maxiter=20, carbon=False,
+                        blinit='noDR', eps=1.0, maxiter=20, carbon=False,
                         **kwargs):
     """
         Function used ot compute Baseline-taking equilibrium.
@@ -1029,6 +1029,10 @@ def compute_BLtaking_eq(blmodel, tariff, LMP, dr_periods, BL='CAISO',
     dfs.append(blmodel.get_results())
     blvals.append(blmodel.compute_baseline(
             dr_periods, BL=BL, red_times=dfs[-1][dfs[-1]['red'] > 0].index))
+    # todo: what are the units/magnitude of the residuals? I increased the MIPGap (2020-02-05), but that seems to
+    # have resulted in convergence failure. If the mipgap is too big relative to the convergance tolerance,
+    # that seems normal. I need to reason out the implications of a 1e-3 mipgap for the baseline residuals that
+    # implies
     objs.append(blmodel._model.getObjective().getValue())
     gencosts.append(blmodel.generation_cost(LMP).getValue())
     residuals.append(np.linalg.norm(blvals[1] - blvals[0]))

@@ -1608,9 +1608,14 @@ def get_demand_charge(tariff, month, isPDP=False, year=None):
     #    return dem_charges[tariff]['Summer']
     # else:
     #    return dem_charges[tariff]['Winter']
+    if isPDP:
+        print("Clay meant to turn off PDP, why are we reaching this point?")
     if year is not None:
         dem_charges = dem_charges_yearly[year]
-        pdpdem_credit = pdpdem_credit_yearly[year]
+        if isPDP:
+            pdpdem_credit = pdpdem_credit_yearly[year]
+        else:
+            pdpdem_credit = 0.0
     if not(isPDP):
         if not('E19' in tariff):
             if (month >= 5) & (month <= 10):
