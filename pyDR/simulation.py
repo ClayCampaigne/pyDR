@@ -341,7 +341,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                         # CAISO BL
                         compute_BLtaking_eq(
                             blmodel, tariff, LMP, dr_periods, BL='CAISO',
-                            blinit='noDR', eps=1.0, maxiter=10, logger=logger,
+                            blinit='noDR', eps=.01, maxiter=10, logger=logger,
                             carbon=carbkw, **kwargs)
                         results = results.append(
                             process_HVAC(blmodel, meter_per_day, ts_start,
@@ -356,7 +356,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                         if tariff in non_gen_tariffs:
                             compute_BLtaking_eq(
                                 blmodel, tariff, LMP, dr_periods, BL='CAISO',
-                                blinit='noDR', eps=1.00, maxiter=10,
+                                blinit='noDR', eps=.01, maxiter=10,
                                 logger=logger, isLMPmG=True, carbon=carbkw,
                                 **kwargs)
                             results = results.append(

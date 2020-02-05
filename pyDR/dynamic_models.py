@@ -33,7 +33,7 @@ class DynamicalSystem(object):
 
     def get_consumption(self):
         """
-            Returns power consumption (kW) and energy consumpiton (kWh) as
+            Returns power consumption (kW) and energy consumption (kWh) as
             gurobi LinExpr or QuadExpr
         """
         raise NotImplementedError('Function not implemented in base class.')
