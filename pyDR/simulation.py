@@ -149,6 +149,9 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
     # in python > 3.4 use logging.handlers.QueueHandler instead
     # qh = logutils.queue.QueueHandler(log_queue)  # CWC commented this out
     logger = logging.getLogger('Process {}'.format(i))
+    logging.basicConfig(level=logging.DEBUG,
+                        handlers=[logging.StreamHandler(),
+                                  logging.FileHandler(os.path.join(log_path, f"process_{i}.log"))])  # I am not seeing log messages at the terminal. Set logging level to 10
     # start work
     logger.log(logging.INFO, 'Solving for range {} - {}'.format(
             data.index[0].date(), data.index[-1].date()))
@@ -286,12 +289,15 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                     if tariff in non_gen_tariffs:
                         logger.log(
                             logging.INFO,
-                            logging.INFO,
                             'Solving {} / {} for '.format(node, tariff) +
                             ' {} events under CAISO (LMP-G)'.format(ndr))
                         blmodel.optimize(tariff, LMP=LMP,
                                          dr_periods=dr_periods, BL='CAISO',
                                          isLMPmG=True, carbon=carbkw)
+                        logger.log(
+                            logging.INFO,
+                            'Completed {} / {} for '.format(node, tariff) +
+                            ' {} events under CAISO (LMP-G)'.format(ndr))
                         results = results.append(
                             process_HVAC(
                                 blmodel, meter_per_day, ts_start, ts_end,
@@ -341,7 +347,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                         # CAISO BL
                         compute_BLtaking_eq(
                             blmodel, tariff, LMP, dr_periods, BL='CAISO',
-                            blinit='noDR', eps=.01, maxiter=10, logger=logger,
+                            blinit='noDR', eps=1.0, maxiter=10, logger=logger,
                             carbon=carbkw, **kwargs)
                         results = results.append(
                             process_HVAC(blmodel, meter_per_day, ts_start,
@@ -356,7 +362,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                         if tariff in non_gen_tariffs:
                             compute_BLtaking_eq(
                                 blmodel, tariff, LMP, dr_periods, BL='CAISO',
-                                blinit='noDR', eps=.01, maxiter=10,
+                                blinit='noDR', eps=1, maxiter=10,
                                 logger=logger, isLMPmG=True, carbon=carbkw,
                                 **kwargs)
                             results = results.append(
@@ -644,8 +650,8 @@ def log_config(logfile):
         'handlers': {
             'console': {
                 'class': 'logging.StreamHandler',
-                'level': 'INFO',
-                'formatter': 'simple',
+                'level': 'DEBUG',
+                'formatter': 'detailed',
             },
             'file': {
                 'class': 'logging.FileHandler',

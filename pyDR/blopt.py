@@ -1040,7 +1040,8 @@ def compute_BLtaking_eq(blmodel, tariff, LMP, dr_periods, BL='CAISO',
     # costs are on the order of 0.1 $/kWh.
     # make the bl convergence in terms of decimal fraction, like the mipgap
     # require the max deviation over periods to be within x percent of the mean. should be a couple kWh
-    residuals.append(2*np.max(blvals[1] - blvals[0])/np.mean(blvals[1] + blvals[0]))
+    # residuals.append(2*np.max(blvals[1] - blvals[0])/np.mean(blvals[1] + blvals[0]))
+    residuals.append(np.max(blvals[1] - blvals[0]))  # had a div by 0 for above
     n_iter = 0
     while (residuals[-1] > eps) and (n_iter < maxiter):
         if 'logger' in kwargs:
