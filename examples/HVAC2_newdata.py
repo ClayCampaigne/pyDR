@@ -15,6 +15,7 @@ import pandas as pd
 import logging
 import logging.handlers
 import logging.config
+import time
 from datetime import datetime
 from pyDR.simulation import get_internal_gains, log_config, simulate_HVAC, max_cool
 
@@ -25,7 +26,7 @@ DATA_PATH = "C:/Users/Clay/Desktop/pyDR_data_pavlak/pyDR_data"
 LOG_PATH = "C:/Users/Clay/Desktop/pyDR_2014-2016_logs"
 RESULTS_PATH = "C:/Users/Clay/Desktop/pyDR_2014-2016_results"
 
-# location of data files (available for download at
+# location of [the old 2012-2014] data files available for download at
 # https://www.ocf.berkeley.edu/~balandat/pyDR_data.zip)
 data_file = os.path.join(DATA_PATH, "data_complete_2014-2016.csv")
 
@@ -63,7 +64,7 @@ def main():
     n_ranges = len(sim_ranges)
 
     # generate scaled sub-DataFrame
-    colnames = colnames = [node+'_temp' for node in sim_nodes] +\
+    colnames = [node+'_temp' for node in sim_nodes] +\
                           [node+'_LMP' for node in sim_nodes]
     data_sim = data[colnames]
     for colname in [node+'_solar' for node in sim_nodes]:
@@ -90,7 +91,7 @@ def main():
     ql.start()
     root.log(logging.INFO, 'Starting simulation.')
 
-    results = []
+    results = pd.DataFrame(data=None)
 
     # start simulating
     with mp.Manager() as mngr:
@@ -102,25 +103,27 @@ def main():
                 args=(i, log_queue, result_queue, data_parallelize[i],
                       sim_nodes, sim_tariffs, n_DR),
                 kwargs={'log_path': LOG_PATH, 'GRB_logfile': GRB_logdir + 'GRB_{}.log'.format(i),
-                        'expMA': False, 'carbon': True, 'MIPGap': .00,
-                        'TimeLimit': 2000, 'output_folder': output_folder,
+                        'expMA': False, 'carbon': True, 'MIPGap': .0023,
+                        'TimeLimit': 999999999, 'output_folder': output_folder,
                         'max_cool': max_cool})
             sim_workers.append(sim_worker)
             sim_worker.start()
 
-        #data wait for all worker processes to finish
-        for sw in sim_workers:
-            sw.join()
+        # save results as processes are completed
+        root.log(logging.DEBUG, 'Waiting for results.')
+        saved = []
+        while len(sim_workers) > 0:
+            for sw in sim_workers:
+                if sw.is_alive():
+                    time.sleep(5)
+                else:
+                    root.log(logging.DEBUG, 'Saving results to disk.')
+                    result = result_queue.get()
+                    results = results.append(result)
+                    results.to_csv(result_file, mode='w', index=False)
+                    saved.append(sw)
+            sim_workers = [sw for sw in sim_workers if sw not in saved]
 
-        root.log(logging.DEBUG, 'Extracting results.')
-        # extract results
-        for i in range(n_ranges):
-            results.append(result_queue.get())
-
-    # save results
-    root.log(logging.DEBUG, 'Saving results to disk.')
-    results = pd.concat(results, ignore_index=True)
-    results.to_csv(result_file, index=False)
 
     # stop logging
     root.log(logging.INFO, 'Simulation completed.')

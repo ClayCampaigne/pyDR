@@ -1056,7 +1056,7 @@ def compute_BLtaking_eq(blmodel, tariff, LMP, dr_periods, BL='CAISO',
                 red_times=dfs[-1][dfs[-1]['red'] > 0].index))
         objs.append(blmodel._model.getObjective().getValue())
         gencosts.append(blmodel.generation_cost(LMP).getValue())
-        residuals.append(np.linalg.norm(blvals[-2] - blvals[-1]))
+        residuals.append(np.linalg.norm(blvals[-2] - blvals[-1], ord=np.inf))
         n_iter += 1
     if 'logger' in kwargs:
         if residuals[-1] <= eps:
