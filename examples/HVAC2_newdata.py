@@ -115,11 +115,12 @@ def main():
         while len(sim_workers) > 0:
             for sw in sim_workers:
                 if sw.is_alive():
-                    time.sleep(5)
+                    root.log(logging.DEBUG, 'Waiting...')
+                    time.sleep(10)
                 else:
+                    sw.join()
                     root.log(logging.DEBUG, 'Saving results to disk.')
-                    result = result_queue.get()
-                    results = results.append(result)
+                    results = results.append(result_queue.get())
                     results.to_csv(result_file, mode='w', index=False)
                     saved.append(sw)
             sim_workers = [sw for sw in sim_workers if sw not in saved]
