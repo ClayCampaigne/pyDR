@@ -37,7 +37,7 @@ log_file = os.path.join(LOG_PATH, "HVAC_sim.log")
 GRB_logdir = os.path.join(LOG_PATH, "GRB_logs")
 
 # location of the result file
-result_file = os.path.join(RESULTS_PATH, "results.csv")
+result_file_stub = os.path.join(RESULTS_PATH, "results_{}.csv")
 
 # folder for output files (Attention: If not none then this will
 # save a few GB of .pickle files)
@@ -103,28 +103,15 @@ def main():
                 args=(i, log_queue, result_queue, data_parallelize[i],
                       sim_nodes, sim_tariffs, n_DR),
                 kwargs={'log_path': LOG_PATH, 'GRB_logfile': GRB_logdir + 'GRB_{}.log'.format(i),
-                        'expMA': False, 'carbon': True, 'MIPGap': .0023,
+                        'expMA': False, 'carbon': True, 'MIPGap': .005,
                         'TimeLimit': 999999999, 'output_folder': output_folder,
-                        'max_cool': max_cool})
+                        'max_cool': max_cool,
+                        'result_file_name': result_file_stub.format(i)})
             sim_workers.append(sim_worker)
             sim_worker.start()
 
-        # save results as processes are completed
-        root.log(logging.DEBUG, 'Waiting for results.')
-        saved = []
-        while len(sim_workers) > 0:
-            for sw in sim_workers:
-                if sw.is_alive():
-                    root.log(logging.DEBUG, 'Waiting...')
-                    time.sleep(10)
-                else:
-                    sw.join()
-                    root.log(logging.DEBUG, 'Saving results to disk.')
-                    results = results.append(result_queue.get())
-                    results.to_csv(result_file, mode='w', index=False)
-                    saved.append(sw)
-            sim_workers = [sw for sw in sim_workers if sw not in saved]
-
+        for sw in sim_workers:
+            sw.join()
 
     # stop logging
     root.log(logging.INFO, 'Simulation completed.')
