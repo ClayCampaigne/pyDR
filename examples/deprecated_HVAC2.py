@@ -98,7 +98,7 @@ def main():
                 args=(i, log_queue, result_queue, data_par[i],
                       sim_nodes, sim_tariffs, n_DR),
                 kwargs={'GRB_logfile': GRB_logdir + 'GRB_{}.log'.format(i),
-                        'expMA': False, 'carbon': True, 'MIPGap': 1e-6,
+                        'expMA': False, 'carbon': True, 'MIPGap': 5e-3, # changed from 1e-6 to 3e-3 on 2021-03-15
                         'TimeLimit': 2000, 'output_folder': output_folder,
                         'max_cool': max_cool})
             sim_workers.append(sim_worker)
