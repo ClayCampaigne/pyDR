@@ -171,6 +171,13 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
     results = pd.DataFrame()
     ts_start, ts_end = data.index[0], data.index[-1]
     year = ts_start.year
+
+    if 'result_file_name' in kwargs.keys():
+        result_file_name = kwargs['result_file_name']
+    else:
+        result_file_name = None
+        logger.log(logging.WARNING, 'not writing intermediate results for worker {}'.format(i))
+
     for node in nodes:
         logger.log(logging.INFO, 'Solving for node {}'.format(node))
         # generate disturbance vector v
@@ -227,6 +234,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                  carbon_indiv=carbon, carbon_soc=carbon,
                                  output_folder=kwargs.get('output_folder')),
                     ignore_index=True)
+                results.to_csv(result_file_name, index=False)
             else:
                 if 'OptFlat' in tariff:
                     carbkw = carbon
@@ -243,6 +251,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                  carbon_indiv=carbkw, carbon_soc=carbon,
                                  output_folder=kwargs.get('output_folder')),
                     ignore_index=True)
+                results.to_csv(result_file_name, index=False)
                 # solve for the RTP version of the tariff if applicable
                 if tariff in non_gen_tariffs:
                     blmodel.optimize(tariff, LMP=LMP, isRT=True, carbon=carbkw)
@@ -253,6 +262,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                      output_folder=kwargs.get(
                                         'output_folder')),
                         ignore_index=True)
+                    results.to_csv(result_file_name, index=False)
                 # solve for the PDP version of the tariff if applicable
                 if False: # tariff in pdp_compatible: CWC 2020-01-15: let's drop the PDP thing in this study; too much clutter
                     blmodel.optimize(tariff, LMP=LMP, isPDP=True,
@@ -264,6 +274,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                      output_folder=kwargs.get(
                                         'output_folder')),
                         ignore_index=True)
+                    results.to_csv(result_file_name, index=False)
                 # now deal with DR events
                 for ndr in n_DR:
                     isDR = net_benefits_test(LMP, n=ndr, how='absolute',
@@ -284,6 +295,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                      output_folder=kwargs.get(
                                         'output_folder')),
                         ignore_index=True)
+                    results.to_csv(result_file_name, index=False)
                     # CAISO for LMP-G (if applicable)
                     # ToDo: Warm-start using solution from LMP compensation
                     if tariff in non_gen_tariffs:
@@ -305,6 +317,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                 carbon_indiv=carbkw, carbon_soc=carbon,
                                 output_folder=kwargs.get('output_folder')),
                             ignore_index=True)
+                        results.to_csv(result_file_name, index=False)
                     # expMA
                     if expMA:
                         # ToDo: Warm-start using solution from CAISO BL
@@ -323,6 +336,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                          output_folder=kwargs.get(
                                             'output_folder')),
                             ignore_index=True)
+                        results.to_csv(result_file_name, index=False)
                         # expMA for LMP-G (if applicable)
                         if tariff in non_gen_tariffs:
                             logger.log(
@@ -342,6 +356,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                              output_folder=kwargs.get(
                                                 'output_folder')),
                                 ignore_index=True)
+                            results.to_csv(result_file_name, index=False)
                     # compute BL-taking equilibrium
                     if BLtaking:
                         # CAISO BL
@@ -357,6 +372,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                          output_folder=kwargs.get(
                                             'output_folder')),
                             ignore_index=True)
+                        results.to_csv(result_file_name, index=False)
                         # do the same thing for LMP-G if applicable
                         # ToDo: Warm-start using solution from LMP compensation
                         if tariff in non_gen_tariffs:
@@ -374,6 +390,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                              output_folder=kwargs.get(
                                                 'output_folder')),
                                 ignore_index=True)
+                            results.to_csv(result_file_name, index=False)
                         # expMA BL
                         if expMA:
                             # ToDo: Warm-start using solution from CAISO BL
@@ -390,6 +407,7 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                              output_folder=kwargs.get(
                                                 'output_folder')),
                                 ignore_index=True)
+                            results.to_csv(result_file_name, index=False)
                             # do the same thing for LMP-G if applicable
                             if tariff in non_gen_tariffs:
                                 compute_BLtaking_eq(
@@ -404,12 +422,14 @@ def simulate_HVAC(i, log_queue, result_queue, data, nodes, tariffs, n_DR=[],
                                         'expMA_LMP-G_BLT', ndr,
                                         carbon_indiv=carbkw, carbon_soc=carbon,
                                         output_folder=kwargs.get(
-                                            'output_folder')),
+                                            'output_folder'),idx=i),
                                     ignore_index=True)
+                                results.to_csv(result_file_name, index=False)
     results['start_date'] = ts_start.date()
     results['end_date'] = ts_end.date()
     result_queue.put(results)
-    logger.log(logging.INFO, 'Simulation completed successfully.')
+    logger.log(logging.INFO, 'Simulation completed successfully. Writing to file.')
+
     return
 
 
