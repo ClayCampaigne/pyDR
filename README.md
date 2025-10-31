@@ -4,7 +4,7 @@ Authors: Maximilian Balandat, Clay Campaigne, Lillian Ratliff
 Python package for simulating behavior and quantifying welfare effects of electricity consumers facing various dynamic pricing schemes.
 This package is the basis for the results reported in:
 
-*C. Campaigne, M. Balandat and L. Ratliff: Welfare Effects of Dynamic Electricity Pricing. In preparation.*
+*C. Campaigne, M. Balandat and L. Ratliff: Welfare Effects of Dynamic Electricity Pricing. Working Paper.*
 
 ### Requirements / Dependencies:
 * gurobipy (+ GUROBI with valid license)
